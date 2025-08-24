@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tracker Test</title>
+    <script src="https://raw.githubusercontent.com/rdgonzalez85/WebTrackerExample/refs/heads/main/trackers.js"></script>
+</head>
+<body>
+    <h1>Tracker Test Page</h1>
+    <div id="status">waiting</div>
+    <script>
+        if (window.trackerLoaded) {
+            document.getElementById("status").textContent = "tracker loaded";
+        } else {
+            document.getElementById("status").textContent = "tracker blocked";
+        }
+    </script>
+</body>
+</html>
