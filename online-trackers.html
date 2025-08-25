@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tracker Blocking Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .tracker { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .blocked { background-color: #e8f5e8; border-color: #4caf50; }
+        .loaded { background-color: #ffebee; border-color: #f44336; }
+        .status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Content Blocking Test</h1>
+    <p>This page tests various tracking scripts from the DuckDuckGo tracker database.</p>
+    
+    <div id="google-analytics" class="tracker">
+        <strong>Google Analytics:</strong>
+        <div class="status" id="ga-status">Testing...</div>
+    </div>
+    
+    <div id="facebook-pixel" class="tracker">
+        <strong>Facebook Pixel:</strong>
+        <div class="status" id="fb-status">Testing...</div>
+    </div>
+    
+    <div id="amazon-ads" class="tracker">
+        <strong>Amazon Ads:</strong>
+        <div class="status" id="amazon-status">Testing...</div>
+    </div>
+    
+    <div id="twitter-ads" class="tracker">
+        <strong>Twitter Ads:</strong>
+        <div class="status" id="twitter-status">Testing...</div>
+    </div>
+    
+    <div id="addthis" class="tracker">
+        <strong>AddThis:</strong>
+        <div class="status" id="addthis-status">Testing...</div>
+    </div>
+
+    <script>
+        // Test Google Analytics
+        window.trackerTests = {};
+        
+        function testTracker(name, statusId, trackerId) {
+            const status = document.getElementById(statusId);
+            const tracker = document.getElementById(trackerId);
+            
+            if (window.trackerTests[name]) {
+                status.textContent = "LOADED - Tracker Not Blocked";
+                tracker.className = "tracker loaded";
+            } else {
+                status.textContent = "BLOCKED - Tracker Successfully Blocked";
+                tracker.className = "tracker blocked";
+            }
+        }
+        
+        // Wait a bit for scripts to load, then check results
+        setTimeout(() => {
+            testTracker('ga', 'ga-status', 'google-analytics');
+            testTracker('fbq', 'fb-status', 'facebook-pixel');
+            testTracker('amazon', 'amazon-status', 'amazon-ads');
+            testTracker('twitter', 'twitter-status', 'twitter-ads');
+            testTracker('addthis', 'addthis-status', 'addthis');
+        }, 2000);
+    </script>
+    
+    <!-- These scripts should be blocked by your content blocker -->
+    
+    <!-- Google Analytics - should be blocked -->
+    <script>
+        window.trackerTests.ga = true;
+        console.log("Google Analytics script loaded - this should be blocked!");
+    </script>
+    <script async src="https://www.google-analytics.com/analytics.js" 
+            onload="window.trackerTests.ga = true;" 
+            onerror="console.log('Google Analytics blocked')"></script>
+    
+    <!-- Facebook Pixel - should be blocked -->
+    <script>
+        window.trackerTests.fbq = true;
+        console.log("Facebook Pixel script loaded - this should be blocked!");
+    </script>
+    <script async src="https://connect.facebook.net/en_US/fbevents.js" 
+            onload="window.trackerTests.fbq = true;" 
+            onerror="console.log('Facebook Pixel blocked')"></script>
+    
+    <!-- Amazon Ads - should be blocked -->
+    <script>
+        window.trackerTests.amazon = true;
+        console.log("Amazon Ads script loaded - this should be blocked!");
+    </script>
+    <script async src="https://s.amazon-adsystem.com/aax2/amzn_ads.js" 
+            onload="window.trackerTests.amazon = true;" 
+            onerror="console.log('Amazon Ads blocked')"></script>
+    
+    <!-- Twitter Ads - should be blocked -->
+    <script>
+        window.trackerTests.twitter = true;
+        console.log("Twitter Ads script loaded - this should be blocked!");
+    </script>
+    <script async src="https://static.ads-twitter.com/uwt.js" 
+            onload="window.trackerTests.twitter = true;" 
+            onerror="console.log('Twitter Ads blocked')"></script>
+    
+    <!-- AddThis - should be blocked -->
+    <script>
+        window.trackerTests.addthis = true;
+        console.log("AddThis script loaded - this should be blocked!");
+    </script>
+    <script async src="https://s7.addthis.com/js/300/addthis_widget.js" 
+            onload="window.trackerTests.addthis = true;" 
+            onerror="console.log('AddThis blocked')"></script>
+
+</body>
+</html>
