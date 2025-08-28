@@ -1,61 +1,90 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Tracker Block Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: -apple-system, system-ui, Helvetica, Arial, sans-serif; margin: 2rem; }
     .ok { color: #0a7f00; }
     .bad { color: #b00020; }
-    code { background: #f4f4f6; padding: 0.25rem 0.4rem; border-radius: 4px; }
+    select { padding: 0.5rem; font-size: 1rem; margin-bottom: 1rem; }
   </style>
 </head>
 <body>
   <h1>Tracker Block Test</h1>
-  <p>This page attempts to load a known tracker and a safe script. Check the console for results.</p>
-
-  <h2>1) Known tracker script (should be <span class="bad">BLOCKED</span>)</h2>
-  <p>Source: <code>https://s0.2mdn.net/instream/html5/ima3.js</code></p>
-
-  <h2>2) Safe script (should <span class="ok">LOAD</span>)</h2>
-  <p>Inline/local script to confirm the page still works.</p>
-
-  <h2>3) Optional tracker pixel (should be <span class="bad">BLOCKED</span>)</h2>
-  <p>Loads an image from an ad/analytics domain (won’t break the page if blocked).</p>
+  <label for="trackerSelect"><strong>Choose provider:</strong></label>
+  <select id="trackerSelect">
+    <option value="">-- Select a provider --</option>
+  </select>
+  <h2>Result</h2>
+  <div id="results"></div>
 
   <script>
-    function log(msg, cls) {
+    const providers = [
+       { name: "Local Safe Script", url: "local" },
+
+       { name: "Google DoubleClick", url: "https://securepubads.g.doubleclick.net/tag/js/gpt.js" },
+       { name: "Google Analytics", url: "https://www.google-analytics.com/analytics.js" },
+       { name: "Google Syndication", url: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" },
+       { name: "2mdn (Google IMA)", url: "https://s0.2mdn.net/instream/html5/ima3.js" },
+       { name: "Facebook Pixel", url: "https://connect.facebook.net/en_US/fbevents.js" },
+       { name: "Twitter Ads", url: "https://static.ads-twitter.com/uwt.js" },
+       { name: "LinkedIn Insight", url: "https://snap.licdn.com/li.lms-analytics/insight.min.js" },
+       { name: "Snapchat Pixel", url: "https://sc-static.net/scevent.min.js" },
+       { name: "TikTok Pixel", url: "https://analytics.tiktok.com/i18n/pixel/sdk.js" },
+       { name: "Taboola", url: "https://cdn.taboola.com/libtrc/unip/12345/tfa.js" },
+       { name: "Outbrain", url: "https://widgets.outbrain.com/outbrain.js" },
+       { name: "Criteo", url: "https://static.criteo.net/js/ld/ld.js" },
+       { name: "Quantcast", url: "https://secure.quantserve.com/quant.js" },
+       { name: "AdRoll", url: "https://s.adroll.com/j/roundtrip.js" },
+       { name: "AppNexus", url: "https://acdn.adnxs.com/ast/ast.js" },
+       { name: "ScorecardResearch", url: "https://sb.scorecardresearch.com/beacon.js" },
+       { name: "Chartbeat", url: "https://static.chartbeat.com/js/chartbeat.js" },
+       { name: "Hotjar", url: "https://static.hotjar.com/c/hotjar-123456.js?sv=6" },
+       { name: "CrazyEgg", url: "https://script.crazyegg.com/pages/scripts/0111/2222.js" },
+       { name: "Mixpanel", url: "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js" },
+       { name: "NewRelic", url: "https://js-agent.newrelic.com/nr-spa-1208.min.js" },
+     ];
+
+    const select = document.getElementById('trackerSelect');
+    const resultsDiv = document.getElementById('results');
+
+    providers.forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = p.url;
+      opt.textContent = `${i + 1}. ${p.name}`;
+      select.appendChild(opt);
+    });
+
+    function clearResults() {
+      resultsDiv.textContent = '';
+    }
+    function log(msg, ok) {
       const p = document.createElement('p');
       p.textContent = msg;
-      if (cls) p.className = cls;
-      document.body.appendChild(p);
-      console[cls === 'bad' ? 'error' : 'log'](msg);
+      p.style.color = ok ? '#0a7f00' : '#b00020';
+      resultsDiv.appendChild(p);
+      console[ok ? 'log' : 'error'](msg);
     }
 
-    // 1) Try to load a known tracker (2mdn.net -> default "block"; ima3.js is in the list)
-    // TDS entry shows default:block and a rule for /instream/html5/ima3.js
-    // https://staticcdn.duckduckgo.com/trackerblocking/v2.1/tds.json
-    (function loadBlockedTracker() {
+    select.addEventListener('change', () => {
+      clearResults();
+      const url = select.value;
+      if (!url) return;
+
+      if (url === 'local') {
+        log('Local safe script executed successfully.', true);
+        return;
+      }
+
+      log(`Trying to load script: ${url}`, false);
       const s = document.createElement('script');
-      s.src = "https://s0.2mdn.net/instream/html5/ima3.js";
-      s.onload = () => log("Tracker script LOADED (unexpected) – blocking may be off.", "bad");
-      s.onerror = () => log("Tracker script BLOCKED as expected (2mdn.net).", "ok");
+      s.src = url + '?rnd=' + Date.now();
+      s.onload = () => log('Script LOADED (unexpected) – should be blocked.', false);
+      s.onerror = () => log('Script BLOCKED (expected).', true);
       document.head.appendChild(s);
-    })();
-
-    // 2) Load a safe local script (inline) to prove JS still runs
-    (function safeScript() {
-      log("Safe inline script executed.", "ok");
-    })();
-
-    // 3) Optional: pixel from another blocked domain (e.g., 3lift.com default:block)
-    (function pixelTest() {
-      const img = new Image();
-      img.src = "https://px.3lift.com/img.gif?test=1"; // typical tracker pixel style URL
-      img.onload = () => log("Tracker pixel LOADED (unexpected) – blocking may be off.", "bad");
-      img.onerror = () => log("Tracker pixel BLOCKED as expected (3lift.com).", "ok");
-    })();
+    });
   </script>
 </body>
 </html>
